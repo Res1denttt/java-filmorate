@@ -7,6 +7,7 @@ import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -100,5 +101,6 @@ class UserControllerTest {
         controller.create(user2);
         Collection<User> allUsers = controller.findAll();
         assertEquals(2, allUsers.size());
+        assertTrue(allUsers.containsAll(List.of(user1, user2)));
     }
 }

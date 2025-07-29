@@ -1,8 +1,6 @@
 package ru.yandex.practicum.filmorate.model;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDate;
 
@@ -15,6 +13,10 @@ public class Film {
     private String description;
     private LocalDate releaseDate;
     private int duration;
+    @Getter
+    private static int maxDescriptionLength = 200;
+    @Getter
+    private static LocalDate firstFilmDate = LocalDate.of(1895, 12, 28);
 
     public Film(String name, String description, LocalDate releaseDate, int duration) {
         this.name = name;

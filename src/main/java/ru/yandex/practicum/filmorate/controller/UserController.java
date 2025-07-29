@@ -33,7 +33,7 @@ public class UserController {
 
     @PutMapping
     public User update(@Valid @RequestBody User user) {
-        if (user.getId() == null || !users.containsKey(user.getId())) {
+        if (user.getId() == null || !exists(user)) {
             log.error("Несуществующий id = {}", user.getId());
             throw new ValidationException("Неверно указан id пользователя");
         }
@@ -41,6 +41,10 @@ public class UserController {
         users.put(user.getId(), user);
         log.info("Обновлен пользователь с id = {}, теперь это: {}", user.getId(), user);
         return user;
+    }
+
+    private boolean exists(User user) {
+        return users.containsKey(user.getId());
     }
 
     private void validate(User user) {

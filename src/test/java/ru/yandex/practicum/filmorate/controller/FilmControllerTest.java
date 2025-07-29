@@ -49,14 +49,14 @@ class FilmControllerTest {
     void shouldThrowExceptionWhenCreateFilmWithTooLongDescription() {
         Film film = new Film("Film", "a".repeat(201), LocalDate.of(2000, 1, 1), 100);
         ValidationException ex = assertThrows(ValidationException.class, () -> controller.create(film));
-        assertEquals("Максимальная длина описания — 200 символов;", ex.getMessage());
+        assertEquals("Максимальная длина описания — " + Film.getMaxDescriptionLength() + " символов", ex.getMessage());
     }
 
     @Test
     void shouldThrowExceptionWhenCreateFilmWithReleaseDateBefore1895() {
         Film film = new Film("Film", "Desc", LocalDate.of(1895, 12, 27), 100);
         ValidationException ex = assertThrows(ValidationException.class, () -> controller.create(film));
-        assertEquals("Дата релиза — не раньше 28 декабря 1895 года", ex.getMessage());
+        assertEquals("Дата релиза — не раньше " + Film.getFirstFilmDate(), ex.getMessage());
     }
 
     @Test
