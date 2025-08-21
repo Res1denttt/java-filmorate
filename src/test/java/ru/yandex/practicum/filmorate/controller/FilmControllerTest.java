@@ -2,8 +2,12 @@ package ru.yandex.practicum.filmorate.controller;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.storage.film.InMemoryFilmStorage;
+import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
 
 import java.time.LocalDate;
 import java.util.Collection;
@@ -16,7 +20,7 @@ class FilmControllerTest {
 
     @BeforeEach
     void beforeEach() {
-        controller = new FilmController();
+        controller = new FilmController(new FilmService(new InMemoryFilmStorage(), new InMemoryUserStorage()));
     }
 
     @Test
@@ -84,7 +88,7 @@ class FilmControllerTest {
     void shouldThrowExceptionWhenUpdateFilmWithNonExistingId() {
         Film film = new Film("Name", "Desc", LocalDate.of(2000, 1, 1), 100);
         film.setId(999L);
-        ValidationException ex = assertThrows(ValidationException.class, () -> controller.update(film));
+        NotFoundException ex = assertThrows(NotFoundException.class, () -> controller.update(film));
         assertEquals("Неверно указан id фильма", ex.getMessage());
     }
 
