@@ -7,7 +7,6 @@ import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.Collection;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -21,7 +20,6 @@ public class UserService {
     public void makeFriends(long userId, long friendId) {
         User user = userStorage.findById(userId);
         User friend = userStorage.findById(friendId);
-        userStorage.exists(user, friend);
         user.getFriends().add(friendId);
         friend.getFriends().add(userId);
         log.info("Пользователь с id = {} теперь дружит с id = {}", userId, friendId);
@@ -30,27 +28,19 @@ public class UserService {
     public void deleteFriend(long userId, long friendId) {
         User user = userStorage.findById(userId);
         User friend = userStorage.findById(friendId);
-        userStorage.exists(user, friend);
         user.getFriends().remove(friendId);
         friend.getFriends().remove(userId);
+        log.info("Пользователь с id = {} больше не дружит с id = {}", userId, friendId);
+
     }
 
     public Set<User> getCommonFriends(long userId, long otherUserId) {
-        User user = userStorage.findById(userId);
-        User otherUser = userStorage.findById(otherUserId);
-        userStorage.exists(user, otherUser);
-        return user.getFriends().stream()
-                .filter(u -> otherUser.getFriends().contains(u))
-                .map(userStorage::findById)
-                .collect(Collectors.toSet());
+        return userStorage.getCommonFriends(userId, otherUserId);
     }
 
     public Set<User> findFriends(long id) {
         User user = userStorage.findById(id);
-        userStorage.exists(user);
-        return user.getFriends().stream()
-                .map(userStorage::findById)
-                .collect(Collectors.toSet());
+        return userStorage.findFriends(user.getFriends());
     }
 
     public Collection<User> findAll() {

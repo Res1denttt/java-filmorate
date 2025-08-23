@@ -9,16 +9,13 @@ import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.Collection;
-import java.util.Comparator;
-import java.util.LinkedHashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 public class FilmService {
-    FilmStorage filmStorage;
-    UserStorage userStorage;
+    private final FilmStorage filmStorage;
+    private final UserStorage userStorage;
 
     public FilmService(FilmStorage filmStorage, UserStorage userStorage) {
         this.filmStorage = filmStorage;
@@ -28,17 +25,15 @@ public class FilmService {
     public void like(long id, long userId) {
         Film film = filmStorage.findById(id);
         User user = userStorage.findById(userId);
-        filmStorage.exists(film);
-        userStorage.exists(user);
         film.getLikes().add(user);
+        log.info("Пользователь с id = {} поставил лайк фильму с id = {}", userId, id);
     }
 
     public void deleteLike(long id, long userId) {
         Film film = filmStorage.findById(id);
         User user = userStorage.findById(userId);
-        filmStorage.exists(film);
-        userStorage.exists(user);
         film.getLikes().remove(user);
+        log.info("Пользователь с id = {} убрал лайк фильму с id = {}", userId, id);
     }
 
     public Set<Film> getMostPopular(int size) {
@@ -46,10 +41,7 @@ public class FilmService {
             log.error("Некорректная длина списка популряных фильмов = {}", size);
             throw new ValidationException("Длина списка популярных фильмов должна быть больше 0");
         }
-        return filmStorage.findAll().stream()
-                .sorted(Comparator.comparingInt((Film film) -> film.getLikes().size()).reversed())
-                .limit(size)
-                .collect(Collectors.toCollection(LinkedHashSet::new));
+        return filmStorage.getMostLiked(size);
     }
 
     public Collection<Film> findAll() {

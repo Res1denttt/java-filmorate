@@ -10,12 +10,13 @@ import java.time.LocalDate;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
 public class InMemoryUserStorage implements UserStorage {
-    private Map<Long, User> users = new HashMap<>();
-
+    private final Map<Long, User> users = new HashMap<>();
 
     @Override
     public Collection<User> findAll() {
@@ -49,13 +50,14 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public void exists(User... userList) {
+    public boolean exists(User... userList) {
         for (User user : userList) {
             if (user.getId() == null || !users.containsKey(user.getId())) {
                 log.error("Несуществующий id = {}", user.getId());
                 throw new NotFoundException("Неверно указан id пользователя");
             }
         }
+        return true;
     }
 
     @Override
@@ -71,6 +73,23 @@ public class InMemoryUserStorage implements UserStorage {
         }
         log.debug("Запрошен пользователь с id = {}", id);
         return user;
+    }
+
+    @Override
+    public Set<User> getCommonFriends(long userId, long otherUserId) {
+        User user = findById(userId);
+        User otherUser = findById(otherUserId);
+        return user.getFriends().stream()
+                .filter(u -> otherUser.getFriends().contains(u))
+                .map(this::findById)
+                .collect(Collectors.toSet());
+    }
+
+    @Override
+    public Set<User> findFriends(Collection<Long> friendsId) {
+        return friendsId.stream()
+                .map(this::findById)
+                .collect(Collectors.toSet());
     }
 
     private void validate(User user) {

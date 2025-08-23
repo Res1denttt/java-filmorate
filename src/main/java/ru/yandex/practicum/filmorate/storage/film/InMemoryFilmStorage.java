@@ -8,9 +8,8 @@ import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 public class InMemoryFilmStorage implements FilmStorage {
@@ -49,11 +48,12 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public void exists(Film film) {
+    public boolean exists(Film film) {
         if (film.getId() == null || !films.containsKey(film.getId())) {
             log.error("Несуществующий id = {}", film.getId());
             throw new NotFoundException("Неверно указан id фильма");
         }
+        return true;
     }
 
     @Override
@@ -69,6 +69,14 @@ public class InMemoryFilmStorage implements FilmStorage {
         }
         log.debug("Запрошен фильм с id = {}", id);
         return film;
+    }
+
+    @Override
+    public Set<Film> getMostLiked(int size) {
+        return findAll().stream()
+                .sorted(Comparator.comparingInt((Film film) -> film.getLikes().size()).reversed())
+                .limit(size)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     private void validate(Film film) {
