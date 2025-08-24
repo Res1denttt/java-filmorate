@@ -34,7 +34,7 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public User update(User user) {
-        exists(user);
+        if (!exists(user)) throw new NotFoundException("Неверно указан id пользователя");
         validate(user);
         users.put(user.getId(), user);
         log.info("Обновлен пользователь с id = {}, теперь это: {}", user.getId(), user);
@@ -43,7 +43,7 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public User delete(User user) {
-        exists(user);
+        if (!exists(user)) throw new NotFoundException("Неверно указан id пользователя");
         users.remove(user);
         log.info("Удален пользователь с id = {}", user.getId());
         return user;
@@ -54,7 +54,7 @@ public class InMemoryUserStorage implements UserStorage {
         for (User user : userList) {
             if (user.getId() == null || !users.containsKey(user.getId())) {
                 log.error("Несуществующий id = {}", user.getId());
-                throw new NotFoundException("Неверно указан id пользователя");
+                return false;
             }
         }
         return true;

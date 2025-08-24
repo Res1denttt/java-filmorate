@@ -32,7 +32,7 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public Film update(Film film) {
-        exists(film);
+        if (!exists(film)) throw new NotFoundException("Неверно указан id фильма");
         validate(film);
         films.put(film.getId(), film);
         log.info("Обновлен фильм с id = {}", film.getId());
@@ -41,7 +41,7 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public Film delete(Film film) {
-        exists(film);
+        if (!exists(film)) throw new NotFoundException("Неверно указан id фильма");
         films.remove(film);
         log.info("Удален фильм с id = {}", film.getId());
         return film;
@@ -51,7 +51,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     public boolean exists(Film film) {
         if (film.getId() == null || !films.containsKey(film.getId())) {
             log.error("Несуществующий id = {}", film.getId());
-            throw new NotFoundException("Неверно указан id фильма");
+            return false;
         }
         return true;
     }
