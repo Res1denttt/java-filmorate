@@ -40,8 +40,8 @@ public class FilmValidation {
     }
 
     private static void validateDuration(Film film) {
-        if (film.getDuration_sec() <= 0) {
-            log.error("Некорректная продолжительность фильма: {}", film.getDuration_sec());
+        if (film.getDurationSec() <= 0) {
+            log.error("Некорректная продолжительность фильма: {}", film.getDurationSec());
             throw new ValidationException("Продолжительность фильма должна быть положительным числом");
         }
     }

@@ -8,7 +8,6 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.film.Film;
@@ -45,7 +44,7 @@ public class FilmDbTest {
         Film dbFilm = storage.findById(filmWithId.getId());
         assertEquals(film.getGenres(), dbFilm.getGenres());
         assertEquals(film.getName(), dbFilm.getName());
-        assertEquals(film.getDuration_sec(), dbFilm.getDuration_sec());
+        assertEquals(film.getDurationSec(), dbFilm.getDurationSec());
         assertEquals(film.getRating(), dbFilm.getRating());
         assertEquals(film.getReleaseDate(), dbFilm.getReleaseDate());
     }
@@ -53,7 +52,7 @@ public class FilmDbTest {
     @Test
     public void testUpdate() {
         Film film = getNewFilm();
-        film.setDuration_sec(null);
+        film.setDurationSec(null);
         film.setName(null);
         film.setId(1L);
         storage.update(film);
@@ -61,7 +60,7 @@ public class FilmDbTest {
         Film dbFilm = storage.findById(1);
         assertEquals(film.getReleaseDate(), dbFilm.getReleaseDate());
         assertEquals(film.getGenres(), dbFilm.getGenres());
-        assertNotEquals(film.getDuration_sec(), dbFilm.getDuration_sec());
+        assertNotEquals(film.getDurationSec(), dbFilm.getDurationSec());
         assertNotEquals(film.getName(), dbFilm.getName());
     }
 

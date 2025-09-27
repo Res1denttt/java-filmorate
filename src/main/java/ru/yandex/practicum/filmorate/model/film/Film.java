@@ -15,7 +15,7 @@ public class Film {
     private String description;
     private LocalDate releaseDate;
     @JsonProperty("duration")
-    private Integer duration_sec;
+    private Integer durationSec;
     @JsonProperty("mpa")
     private Rating rating;
     private List<Genre> genres = new ArrayList<>();
@@ -25,10 +25,10 @@ public class Film {
     @Getter
     private static LocalDate firstFilmDate = LocalDate.of(1895, 12, 28);
 
-    public Film(String name, String description, LocalDate releaseDate, int duration_sec) {
+    public Film(String name, String description, LocalDate releaseDate, int durationSec) {
         this.name = name;
         this.description = description;
         this.releaseDate = releaseDate;
-        this.duration_sec = duration_sec;
+        this.durationSec = durationSec;
     }
 }

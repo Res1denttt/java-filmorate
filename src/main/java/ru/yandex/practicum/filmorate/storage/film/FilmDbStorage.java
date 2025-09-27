@@ -64,7 +64,7 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
             ps.setString(1, film.getName());
             ps.setString(2, film.getDescription());
             ps.setDate(3, Date.valueOf(film.getReleaseDate()));
-            ps.setObject(4, film.getDuration_sec(), Types.INTEGER);
+            ps.setObject(4, film.getDurationSec(), Types.INTEGER);
             int ratingId = film.getRating().getId();
             if (!ratingDbStorage.idExists(ratingId)) throw new NotFoundException("Указан несуществующий рейтинг");
             ps.setInt(5, ratingId);
@@ -90,7 +90,7 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
         String name = film.getName() == null ? oldFilm.getName() : film.getName();
         String description = film.getDescription() == null ? oldFilm.getDescription() : film.getDescription();
         LocalDate releaseDate = film.getReleaseDate() == null ? oldFilm.getReleaseDate() : film.getReleaseDate();
-        int durationSec = film.getDuration_sec() == null ? oldFilm.getDuration_sec() : film.getDuration_sec();
+        int durationSec = film.getDurationSec() == null ? oldFilm.getDurationSec() : film.getDurationSec();
         int ratingId = film.getRating().getId() == null ? oldFilm.getRating().getId() : film.getRating().getId();
         if (!ratingDbStorage.idExists(ratingId)) throw new NotFoundException("Указан несуществующий рейтинг");
 

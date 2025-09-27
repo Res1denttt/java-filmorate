@@ -31,7 +31,7 @@ class FilmControllerTest {
         assertNotNull(created.getId());
         assertTrue(created.getId() > 0);
         assertEquals("Matrix", created.getName());
-        assertEquals(136, created.getDuration_sec());
+        assertEquals(136, created.getDurationSec());
         assertEquals(1, controller.findAll().size());
     }
 
@@ -80,7 +80,7 @@ class FilmControllerTest {
         assertEquals(created.getId(), result.getId());
         assertEquals("New Name", result.getName());
         assertEquals("New Desc", result.getDescription());
-        assertEquals(120, result.getDuration_sec());
+        assertEquals(120, result.getDurationSec());
         assertEquals(1, controller.findAll().size());
     }
 
