@@ -4,7 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
-import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.film.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.storage.film.InMemoryFilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
@@ -31,7 +31,7 @@ class FilmControllerTest {
         assertNotNull(created.getId());
         assertTrue(created.getId() > 0);
         assertEquals("Matrix", created.getName());
-        assertEquals(136, created.getDuration());
+        assertEquals(136, created.getDuration_sec());
         assertEquals(1, controller.findAll().size());
     }
 
@@ -80,7 +80,7 @@ class FilmControllerTest {
         assertEquals(created.getId(), result.getId());
         assertEquals("New Name", result.getName());
         assertEquals("New Desc", result.getDescription());
-        assertEquals(120, result.getDuration());
+        assertEquals(120, result.getDuration_sec());
         assertEquals(1, controller.findAll().size());
     }
 

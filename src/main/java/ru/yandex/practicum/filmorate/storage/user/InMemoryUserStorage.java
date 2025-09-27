@@ -4,14 +4,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.user.User;
+import ru.yandex.practicum.filmorate.storage.user.util.UserStorage;
+import ru.yandex.practicum.filmorate.storage.user.util.UserValidation;
 
-import java.time.LocalDate;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.*;
 
 @Slf4j
 @Component
@@ -25,7 +22,7 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public User create(User user) {
-        validate(user);
+        UserValidation.validate(user);
         user.setId(generateId());
         users.put(user.getId(), user);
         log.info("Добавлен новый пользователь: {}", user);
@@ -34,26 +31,25 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public User update(User user) {
-        if (!exists(user)) throw new NotFoundException("Неверно указан id пользователя");
-        validate(user);
+        if (!exists(user.getId())) throw new NotFoundException("Неверно указан id пользователя");
+        UserValidation.validateUpdate(user);
         users.put(user.getId(), user);
         log.info("Обновлен пользователь с id = {}, теперь это: {}", user.getId(), user);
         return user;
     }
 
     @Override
-    public User delete(User user) {
-        if (!exists(user)) throw new NotFoundException("Неверно указан id пользователя");
-        users.remove(user);
-        log.info("Удален пользователь с id = {}", user.getId());
-        return user;
+    public int delete(long id) {
+        if (!exists(id)) throw new NotFoundException("Неверно указан id пользователя");
+        users.remove(id);
+        log.info("Удален пользователь с id = {}", id);
+        return 1;
     }
 
-    @Override
-    public boolean exists(User... userList) {
-        for (User user : userList) {
-            if (user.getId() == null || !users.containsKey(user.getId())) {
-                log.error("Несуществующий id = {}", user.getId());
+    private boolean exists(long... user_ids) {
+        for (long id : user_ids) {
+            if (!users.containsKey(id)) {
+                log.error("Несуществующий id = {}", id);
                 return false;
             }
         }
@@ -61,7 +57,7 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public User findById(long id) {
+    public Optional<User> findById(long id) {
         if (id < 1) {
             log.error("Указан id < 1. Id = {}", id);
             throw new ValidationException("Id не может быть < 1");
@@ -72,61 +68,28 @@ public class InMemoryUserStorage implements UserStorage {
             throw new NotFoundException("Пользователь с id = " + id + " не существует");
         }
         log.debug("Запрошен пользователь с id = {}", id);
-        return user;
+        return Optional.of(user);
     }
 
     @Override
     public Set<User> getCommonFriends(long userId, long otherUserId) {
-        User user = findById(userId);
-        User otherUser = findById(otherUserId);
-        return user.getFriends().stream()
-                .filter(u -> otherUser.getFriends().contains(u))
-                .map(this::findById)
-                .collect(Collectors.toSet());
+//        User user = findById(userId).orElseThrow(() -> new NotFoundException("Пользователь с id " + userId + "не найден"));
+//        User otherUser = findById(otherUserId).orElseThrow(() -> new NotFoundException("Пользователь с id " + userId +
+//                "не найден"));
+//        return user.getFriends().stream()
+//                .filter(u -> otherUser.getFriends().contains(u))
+//                .map(this::findById)
+//                .collect(Collectors.toSet());
+        return Set.of();
     }
 
+    //
     @Override
-    public Set<User> findFriends(Collection<Long> friendsId) {
-        return friendsId.stream()
-                .map(this::findById)
-                .collect(Collectors.toSet());
-    }
-
-    private void validate(User user) {
-        validateEmail(user);
-        validateLogin(user);
-        validateName(user);
-        validateBirthday(user);
-    }
-
-    private void validateEmail(User user) {
-        String email = user.getEmail();
-        if (email == null || email.isBlank() || !email.contains("@")) {
-            log.error("Некорректная почта: {}", email);
-            throw new ValidationException("Электронная почта не может быть пустой и должна содержать символ @");
-        }
-    }
-
-    private void validateLogin(User user) {
-        String login = user.getLogin();
-        if (login == null || login.isBlank() || login.contains(" ")) {
-            log.error("Некорретный логин: {}", login);
-            throw new ValidationException("Логин не может быть пустым и содержать пробелы");
-        }
-    }
-
-    private void validateName(User user) {
-        String name = user.getName();
-        if (name == null || name.isBlank()) {
-            user.setName(user.getLogin());
-        }
-    }
-
-    private void validateBirthday(User user) {
-        if (user.getBirthday().isAfter(LocalDate.now())) {
-            log.error("Некорректная дата рождения: {}", user.getBirthday());
-            throw new ValidationException("Дата рождения не может быть в будущем");
-        }
+    public Set<User> findFriends(long user_Id) {
+//        return friendsId.stream()
+//                .map(this::findById)
+//                .collect(Collectors.toSet());
+        return Set.of();
     }
 
     private long generateId() {
@@ -134,5 +97,15 @@ public class InMemoryUserStorage implements UserStorage {
                 .mapToLong(User::getId)
                 .max()
                 .orElse(0) + 1;
+    }
+
+    @Override
+    public void makeFriends(long userId, long friendId) {
+
+    }
+
+    @Override
+    public void deleteFriend(long userId, long friendId) {
+
     }
 }

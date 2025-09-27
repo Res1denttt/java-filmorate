@@ -1,6 +1,6 @@
-package ru.yandex.practicum.filmorate.storage.film;
+package ru.yandex.practicum.filmorate.storage.film.util;
 
-import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.film.Film;
 
 import java.util.Collection;
 import java.util.Set;
@@ -12,11 +12,13 @@ public interface FilmStorage {
 
     Film update(Film film);
 
-    Film delete(Film film);
-
-    boolean exists(Film film);
+    int delete(long id);
 
     Film findById(long id);
 
     Set<Film> getMostLiked(int size);
+
+    public void like(long id, long userId);
+
+    public void deleteLike(long id, long userId);
 }

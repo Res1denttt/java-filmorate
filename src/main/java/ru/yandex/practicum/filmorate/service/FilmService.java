@@ -3,10 +3,9 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.user.UserStorage;
+import ru.yandex.practicum.filmorate.model.film.Film;
+import ru.yandex.practicum.filmorate.storage.film.util.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.user.util.UserStorage;
 
 import java.util.Collection;
 import java.util.Set;
@@ -15,25 +14,17 @@ import java.util.Set;
 @Service
 public class FilmService {
     private final FilmStorage filmStorage;
-    private final UserStorage userStorage;
 
     public FilmService(FilmStorage filmStorage, UserStorage userStorage) {
         this.filmStorage = filmStorage;
-        this.userStorage = userStorage;
     }
 
     public void like(long id, long userId) {
-        Film film = filmStorage.findById(id);
-        User user = userStorage.findById(userId);
-        film.getLikes().add(user);
-        log.info("Пользователь с id = {} поставил лайк фильму с id = {}", userId, id);
+        filmStorage.like(id, userId);
     }
 
     public void deleteLike(long id, long userId) {
-        Film film = filmStorage.findById(id);
-        User user = userStorage.findById(userId);
-        film.getLikes().remove(user);
-        log.info("Пользователь с id = {} убрал лайк фильму с id = {}", userId, id);
+        filmStorage.deleteLike(id, userId);
     }
 
     public Set<Film> getMostPopular(int size) {
