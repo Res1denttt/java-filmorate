@@ -2,4 +2,4 @@
 Template repository for Filmorate project.
 ## Database schema
 
-![Database schema](https://raw.githubusercontent.com/Res1denttt/java-filmorate/main/DB_draft.png)
+![Схема базы данных](https://github.com/Res1denttt/java-filmorate/raw/main/dbDraft.png)
