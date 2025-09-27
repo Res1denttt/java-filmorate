@@ -46,8 +46,8 @@ public class InMemoryUserStorage implements UserStorage {
         return 1;
     }
 
-    private boolean exists(long... user_ids) {
-        for (long id : user_ids) {
+    private boolean exists(long... userIds) {
+        for (long id : userIds) {
             if (!users.containsKey(id)) {
                 log.error("Несуществующий id = {}", id);
                 return false;
@@ -85,7 +85,7 @@ public class InMemoryUserStorage implements UserStorage {
 
     //
     @Override
-    public Set<User> findFriends(long user_Id) {
+    public Set<User> findFriends(long userId) {
 //        return friendsId.stream()
 //                .map(this::findById)
 //                .collect(Collectors.toSet());
