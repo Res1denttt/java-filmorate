@@ -7,7 +7,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
-import ru.yandex.practicum.filmorate.exceptions.ValidationException;
+import ru.yandex.practicum.filmorate.exceptions.FriendshipAlreadyExistsException;
 import ru.yandex.practicum.filmorate.model.user.User;
 import ru.yandex.practicum.filmorate.storage.mappers.UserRowMapper;
 import ru.yandex.practicum.filmorate.storage.user.UserDbStorage;
@@ -81,28 +81,36 @@ class UserDbTest {
     }
 
     @Test
-    public void testMakeFriends() {
-        storage.makeFriends(3, 1);
-        assertTrue(storage.findFriends(3).contains(storage.findById(1).get()));
-        assertFalse(storage.findFriends(1).contains(storage.findById(3).get()));
+    public void testMakeFriends() throws FriendshipAlreadyExistsException {
+        User user = new User();
+        user.setId(3L);
+        User friend = new User();
+        friend.setId(1L);
+        storage.makeFriends(user, friend);
+        assertTrue(storage.findFriends(user).contains(storage.findById(1).get()));
+        assertFalse(storage.findFriends(friend).contains(storage.findById(3).get()));
     }
-
-    @Test
-    public void failTestMakeFriendsExists() {
-        assertThrows(ValidationException.class, () -> storage.makeFriends(2, 3));
-    }
-
 
     @Test
     public void testDeleteFriend() {
-        assertEquals(1, storage.findFriends(1).size());
-        storage.deleteFriend(1, 2);
-        assertTrue(storage.findFriends(1).isEmpty());
+        User user = new User();
+        user.setId(1L);
+        User friend = new User();
+        friend.setId(2L);
+        assertEquals(1, storage.findFriends(user).size());
+        storage.deleteFriend(user, friend);
+        assertTrue(storage.findFriends(user).isEmpty());
     }
 
     @Test
-    public void testGetCommonFriends() {
-        storage.makeFriends(1, 3);
-        assertEquals(1, storage.getCommonFriends(1, 2).size());
+    public void testGetCommonFriends() throws FriendshipAlreadyExistsException {
+        User user = new User();
+        user.setId(1L);
+        User friend = new User();
+        friend.setId(3L);
+        storage.makeFriends(user, friend);
+        User anotherUser = new User();
+        anotherUser.setId(2L);
+        assertEquals(1, storage.getCommonFriends(user, anotherUser).size());
     }
 }

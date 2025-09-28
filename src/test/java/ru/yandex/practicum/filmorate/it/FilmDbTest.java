@@ -8,11 +8,11 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
-import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.film.Film;
 import ru.yandex.practicum.filmorate.model.film.Genre;
 import ru.yandex.practicum.filmorate.model.film.Rating;
+import ru.yandex.practicum.filmorate.model.user.User;
 import ru.yandex.practicum.filmorate.storage.film.FilmDbStorage;
 import ru.yandex.practicum.filmorate.storage.film.GenresDbStorage;
 import ru.yandex.practicum.filmorate.storage.film.RatingDbStorage;
@@ -41,7 +41,8 @@ public class FilmDbTest {
         Film film = getNewFilm();
         Film filmWithId = storage.create(film);
 
-        Film dbFilm = storage.findById(filmWithId.getId());
+        Film dbFilm = storage.findById(filmWithId.getId()).get();
+        storage.setGenres(List.of(dbFilm));
         assertEquals(film.getGenres(), dbFilm.getGenres());
         assertEquals(film.getName(), dbFilm.getName());
         assertEquals(film.getDurationSec(), dbFilm.getDurationSec());
@@ -57,7 +58,8 @@ public class FilmDbTest {
         film.setId(1L);
         storage.update(film);
 
-        Film dbFilm = storage.findById(1);
+        Film dbFilm = storage.findById(1).get();
+        storage.setGenres(List.of(dbFilm));
         assertEquals(film.getReleaseDate(), dbFilm.getReleaseDate());
         assertEquals(film.getGenres(), dbFilm.getGenres());
         assertNotEquals(film.getDurationSec(), dbFilm.getDurationSec());
@@ -67,8 +69,10 @@ public class FilmDbTest {
     @Test
     public void testDelete() {
         assertNotNull(storage.findById(1));
-        storage.delete(1);
-        assertThrows(NotFoundException.class, () -> storage.findById(1));
+        Film film = new Film();
+        film.setId(1L);
+        storage.delete(film);
+        assertTrue(storage.findById(1).isEmpty());
     }
 
     @Test
@@ -79,20 +83,34 @@ public class FilmDbTest {
 
     @Test
     public void testLike() {
-        storage.like(2, 1);
-        assertTrue(storage.findById(2).getLikes().contains(1L));
+        Film film = new Film();
+        film.setId(2L);
+        User user = new User();
+        user.setId(1L);
+        storage.like(film, user);
+        Film dbfilm = storage.findById(2).get();
+        dbfilm.setLikes(storage.getLikes(dbfilm));
+        assertTrue(dbfilm.getLikes().contains(1L));
     }
 
     @Test
     public void failTestLike() {
-        storage.like(2, 1);
-        assertThrows(ValidationException.class, () -> storage.like(2, 1));
+        Film film = new Film();
+        film.setId(2L);
+        User user = new User();
+        user.setId(1L);
+        storage.like(film, user);
+        assertThrows(ValidationException.class, () -> storage.like(film, user));
     }
 
     @Test
     public void deleteLike() {
-        storage.deleteLike(1, 1);
-        assertFalse(storage.findById(1).getLikes().contains(1L));
+        Film film = new Film();
+        film.setId(1L);
+        User user = new User();
+        user.setId(1L);
+        storage.deleteLike(film, user);
+        assertFalse(storage.findById(1).get().getLikes().contains(1L));
     }
 
     @Test

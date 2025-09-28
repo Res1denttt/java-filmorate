@@ -46,7 +46,8 @@ public class InMemoryUserStorage implements UserStorage {
         return 1;
     }
 
-    private boolean exists(long... userIds) {
+    @Override
+    public boolean exists(long... userIds) {
         for (long id : userIds) {
             if (!users.containsKey(id)) {
                 log.error("Несуществующий id = {}", id);
@@ -72,8 +73,8 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public Set<User> getCommonFriends(long userId, long otherUserId) {
-//        User user = findById(userId).orElseThrow(() -> new NotFoundException("Пользователь с id " + userId + "не найден"));
+    public Set<User> getCommonFriends(User user, User anotherUser) {
+//        User user = findById(userId).orElseThrow(() -> NotFoundException("Пользователь с id " + userId + "не найден"));
 //        User otherUser = findById(otherUserId).orElseThrow(() -> new NotFoundException("Пользователь с id " + userId +
 //                "не найден"));
 //        return user.getFriends().stream()
@@ -85,7 +86,7 @@ public class InMemoryUserStorage implements UserStorage {
 
     //
     @Override
-    public Set<User> findFriends(long userId) {
+    public Set<User> findFriends(User user) {
 //        return friendsId.stream()
 //                .map(this::findById)
 //                .collect(Collectors.toSet());
@@ -100,12 +101,12 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public void makeFriends(long userId, long friendId) {
+    public void makeFriends(User user, User friend) {
 
     }
 
     @Override
-    public void deleteFriend(long userId, long friendId) {
+    public void deleteFriend(User user, User friend) {
 
     }
 }

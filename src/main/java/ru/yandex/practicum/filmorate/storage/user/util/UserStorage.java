@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.user.util;
 
+import ru.yandex.practicum.filmorate.exceptions.FriendshipAlreadyExistsException;
 import ru.yandex.practicum.filmorate.model.user.User;
 
 import java.util.Collection;
@@ -17,11 +18,13 @@ public interface UserStorage {
 
     Optional<User> findById(long id);
 
-    Set<User> getCommonFriends(long userId, long otherUserId);
+    Set<User> getCommonFriends(User user, User anotherUser);
 
-    Set<User> findFriends(long userId);
+    Set<User> findFriends(User user);
 
-    void makeFriends(long userId, long friendId);
+    void makeFriends(User user, User friend) throws FriendshipAlreadyExistsException;
 
-    void deleteFriend(long userId, long friendId);
+    void deleteFriend(User user, User friend);
+
+    boolean exists(long... id);
 }

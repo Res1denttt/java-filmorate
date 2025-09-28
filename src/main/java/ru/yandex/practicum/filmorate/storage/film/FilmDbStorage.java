@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.film.Film;
+import ru.yandex.practicum.filmorate.model.user.User;
 import ru.yandex.practicum.filmorate.storage.BaseRepository;
 import ru.yandex.practicum.filmorate.storage.film.util.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.film.util.FilmValidation;
@@ -84,9 +85,8 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
 
     @Override
     public Film update(Film film) {
-        Film oldFilm = findById(film.getId());
-        if (oldFilm == null) throw new NotFoundException("Фильма с id = " + film.getId() + "не существует");
-
+        Film oldFilm = findById(film.getId()).orElseThrow(() -> new NotFoundException("Фильма с id = " + film.getId() +
+                "не существует"));
         String name = film.getName() == null ? oldFilm.getName() : film.getName();
         String description = film.getDescription() == null ? oldFilm.getDescription() : film.getDescription();
         LocalDate releaseDate = film.getReleaseDate() == null ? oldFilm.getReleaseDate() : film.getReleaseDate();
@@ -103,8 +103,8 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
     }
 
     @Override
-    public int delete(long id) {
-        return jdbc.update(DELETE_QUERY, id);
+    public int delete(Film film) {
+        return jdbc.update(DELETE_QUERY, film.getId());
     }
 
     @Override
@@ -115,15 +115,14 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
     }
 
     @Override
-    public Film findById(long id) {
-        Film film = findOne(FIND_BY_ID_QUERY, id).orElseThrow(() -> new NotFoundException("Фильм с id = " + id + " не найден"));
-        setGenres(List.of(film));
-        film.setLikes(getLikes(id));
-        return film;
+    public Optional<Film> findById(long id) {
+        return findOne(FIND_BY_ID_QUERY, id);
     }
 
     @Override
-    public void like(long id, long userId) {
+    public void like(Film film, User user) {
+        long id = film.getId();
+        long userId = user.getId();
         int numberOfLikes = jdbc.queryForObject(GET_UNIQUE_LIKE_QUERY, Integer.class, id, userId);
         if (numberOfLikes != 0)
             throw new ValidationException("Пользователь с id = " + userId + " уже постаил лайк " +
@@ -140,16 +139,20 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
     }
 
     @Override
-    public void deleteLike(long id, long userId) {
+    public void deleteLike(Film film, User user) {
+        long id = film.getId();
+        long userId = user.getId();
         int rowsAffected = jdbc.update(DELETE_LIKE_QUERY, id, userId);
         if (rowsAffected < 1) throw new NotFoundException("Лайк не найден");
     }
 
-    public Set<Long> getLikes(long filmId) {
-        return new HashSet<>(jdbc.queryForList(GET_LIKES, Long.class, filmId));
+    @Override
+    public Set<Long> getLikes(Film film) {
+        return new HashSet<>(jdbc.queryForList(GET_LIKES, Long.class, film.getId()));
     }
 
-    private void setGenres(List<Film> films) {
+    @Override
+    public void setGenres(List<Film> films) {
         for (Film film : films) {
             film.setGenres(new ArrayList<>(genresDbStorage.getFilmGenre(film.getId())));
         }

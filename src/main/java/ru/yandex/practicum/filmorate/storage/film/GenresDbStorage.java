@@ -40,7 +40,7 @@ public class GenresDbStorage extends BaseRepository<Genre> {
         return jdbc.queryForList(GET_ALL_GENRE_IDS_QUERY, Integer.class);
     }
 
-    public boolean idExists(int id) {
+    public boolean genreExists(int id) {
         return findAllIds().contains(id);
     }
 
@@ -58,7 +58,7 @@ public class GenresDbStorage extends BaseRepository<Genre> {
         int rowsAffected = 0;
         for (Genre genre : genres) {
             int genreId = genre.getId();
-            if (!idExists(genreId)) throw new NotFoundException("Указан несуществующий жанр");
+            if (!genreExists(genreId)) throw new NotFoundException("Указан несуществующий жанр");
             rowsAffected += jdbc.update(ADD_GENRE_QUERY, film.getId(), genreId);
         }
         return rowsAffected == genres.size();

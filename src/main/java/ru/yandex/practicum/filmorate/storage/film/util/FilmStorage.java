@@ -1,9 +1,9 @@
 package ru.yandex.practicum.filmorate.storage.film.util;
 
 import ru.yandex.practicum.filmorate.model.film.Film;
+import ru.yandex.practicum.filmorate.model.user.User;
 
-import java.util.Collection;
-import java.util.Set;
+import java.util.*;
 
 public interface FilmStorage {
     Collection<Film> findAll();
@@ -12,13 +12,17 @@ public interface FilmStorage {
 
     Film update(Film film);
 
-    int delete(long id);
+    int delete(Film film);
 
-    Film findById(long id);
+    Optional<Film> findById(long id);
 
     Set<Film> getMostLiked(int size);
 
-    public void like(long id, long userId);
+    void like(Film film, User user);
 
-    public void deleteLike(long id, long userId);
+    void deleteLike(Film film, User user);
+
+    Set<Long> getLikes(Film film);
+
+    void setGenres(List<Film> films);
 }

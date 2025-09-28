@@ -7,6 +7,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.exceptions.FriendshipAlreadyExistsException;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.user.Friendship;
@@ -20,7 +21,6 @@ import java.sql.PreparedStatement;
 import java.sql.Timestamp;
 import java.time.*;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Primary
@@ -51,6 +51,11 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
     private static final String CHANGE_FRIENDSHIP_INITIATOR_QUERY = "UPDATE user_friends SET accepted_at = null, " +
             "initiator_id = ? WHERE user_id = ? AND friend_id = ?";
     private static final String FIND_ID_BY_EMAIL_QUERY = "SELECT * FROM users WHERE email = ?";
+    private static final String FIND_COMMON_FRIENDS = "SELECT u.user_id, u.email, u.login, u.user_name, u.birthday " +
+            "FROM users u JOIN user_friends uf ON ((uf.user_id = ? AND uf.friend_id = u.user_id) OR " +
+            "(uf.friend_id = ? AND uf.user_id = u.user_id)) JOIN user_friends uf2 ON ((uf2.user_id = ? AND " +
+            "uf2.friend_id = u.user_id) OR (uf2.friend_id = ? AND uf2.user_id = u.user_id)) WHERE (uf.initiator_id = ? " +
+            "OR uf.accepted_at IS NOT NULL) AND (uf2.initiator_id = ? OR uf2.accepted_at IS NOT NULL)";
 
 
     @Override
@@ -125,7 +130,9 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
     }
 
     @Override
-    public void makeFriends(long userId, long anotherUserId) {
+    public void makeFriends(User user, User anotherUser) throws FriendshipAlreadyExistsException {
+        long userId = user.getId();
+        long anotherUserId = anotherUser.getId();
         if (userId == anotherUserId) throw new ValidationException("Нельзя себя добавить в друзья");
         long minId = Math.min(userId, anotherUserId);
         long maxId = Math.max(userId, anotherUserId);
@@ -134,13 +141,16 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
             return;
         }
         Friendship friendship = getFriendship(userId, anotherUserId).get();
-        if (friendship.getAcceptedAt() != null) throw new ValidationException("Пользователи уже дружат");
-        if (friendship.getInitiatorId() == userId) throw new ValidationException("Запрос на дружбу уже направлен");
+        if (friendship.getAcceptedAt() != null) throw new FriendshipAlreadyExistsException("Пользователи уже дружат");
+        if (friendship.getInitiatorId() == userId)
+            throw new FriendshipAlreadyExistsException("Запрос на дружбу уже направлен");
         jdbc.update(ACCEPT_FRIENDSHIP_QUERY, OffsetDateTime.now(), minId, maxId);
     }
 
     @Override
-    public void deleteFriend(long userId, long friendId) {
+    public void deleteFriend(User user, User friend) {
+        long userId = user.getId();
+        long friendId = friend.getId();
         if (userId == friendId) throw new ValidationException("Нельзя удалить себя из друзей");
         long minId = Math.min(userId, friendId);
         long maxId = Math.max(userId, friendId);
@@ -155,17 +165,17 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
     }
 
     @Override
-    public Set<User> findFriends(long userId) {
+    public Set<User> findFriends(User user) {
+        long userId = user.getId();
         return new HashSet<>(findMany(FIND_FRIENDS_QUERY, userId, userId, userId));
     }
 
     @Override
-    public Set<User> getCommonFriends(long userId, long anotherUserId) {
-        Set<User> userFriends = findFriends(userId);
-        Set<User> anotherUserFriends = findFriends(anotherUserId);
-        return userFriends.stream()
-                .filter(anotherUserFriends::contains)
-                .collect(Collectors.toSet());
+    public Set<User> getCommonFriends(User user, User anotherUser) {
+        long userId = user.getId();
+        long anotherUserId = anotherUser.getId();
+        return new HashSet<>(jdbc.query(FIND_COMMON_FRIENDS, mapper, userId, userId, anotherUserId, anotherUserId,
+                userId, anotherUserId));
     }
 
     private Optional<Friendship> getFriendship(long userId, long anotherUserId) {
@@ -181,5 +191,16 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
                     return Optional.empty();
                 },
                 Math.min(userId, anotherUserId), Math.max(userId, anotherUserId));
+    }
+
+    @Override
+    public boolean exists(long... userIds) {
+        for (long id : userIds) {
+            if (findById(id).isEmpty()) {
+                log.error("Несуществующий id = {}", id);
+                return false;
+            }
+        }
+        return true;
     }
 }

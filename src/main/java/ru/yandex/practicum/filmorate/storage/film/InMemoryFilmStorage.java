@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.film.Film;
+import ru.yandex.practicum.filmorate.model.user.User;
 import ru.yandex.practicum.filmorate.storage.film.util.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.film.util.FilmValidation;
 
@@ -41,7 +42,8 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public int delete(long id) {
+    public int delete(Film film) {
+        long id = film.getId();
         if (!exists(films.get(id))) throw new NotFoundException("Неверно указан id фильма");
         films.remove(id);
         log.info("Удален фильм с id = {}", id);
@@ -57,7 +59,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Film findById(long id) {
+    public Optional<Film> findById(long id) {
         if (id < 1) {
             log.error("Указан id < 1. Id = {}", id);
             throw new ValidationException("Id не может быть < 1");
@@ -68,7 +70,7 @@ public class InMemoryFilmStorage implements FilmStorage {
             throw new NotFoundException("Фильма с id = " + id + " не существует");
         }
         log.debug("Запрошен фильм с id = {}", id);
-        return film;
+        return Optional.of(film);
     }
 
     @Override
@@ -87,16 +89,24 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public void like(long id, long userId) {
-        Film film = findById(id);
-        film.getLikes().add(userId);
-        log.info("Пользователь с id = {} поставил лайк фильму с id = {}", userId, id);
+    public void like(Film film, User user) {
+        film.getLikes().add(user.getId());
+        log.info("Пользователь с id = {} поставил лайк фильму с id = {}", user.getId(), film.getId());
     }
 
     @Override
-    public void deleteLike(long id, long userId) {
-        Film film = findById(id);
-        film.getLikes().remove(userId);
-        log.info("Пользователь с id = {} убрал лайк фильму с id = {}", userId, id);
+    public void deleteLike(Film film, User user) {
+        film.getLikes().remove(user.getId());
+        log.info("Пользователь с id = {} убрал лайк фильму с id = {}", user.getId(), film.getId());
+    }
+
+    @Override
+    public Set<Long> getLikes(Film film) {
+        return Set.of();
+    }
+
+    @Override
+    public void setGenres(List<Film> films) {
+
     }
 }
