@@ -1,10 +1,10 @@
-package ru.yandex.practicum.filmorate.model;
+package ru.yandex.practicum.filmorate.model.film;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 @Data
 @NoArgsConstructor
@@ -14,17 +14,21 @@ public class Film {
     private String name;
     private String description;
     private LocalDate releaseDate;
-    private int duration;
-    private Set<User> likes = new HashSet<>();
+    @JsonProperty("duration")
+    private Integer durationSec;
+    @JsonProperty("mpa")
+    private Rating rating;
+    private List<Genre> genres = new ArrayList<>();
+    private Set<Long> likes = new HashSet<>();
     @Getter
     private static int maxDescriptionLength = 200;
     @Getter
     private static LocalDate firstFilmDate = LocalDate.of(1895, 12, 28);
 
-    public Film(String name, String description, LocalDate releaseDate, int duration) {
+    public Film(String name, String description, LocalDate releaseDate, int durationSec) {
         this.name = name;
         this.description = description;
         this.releaseDate = releaseDate;
-        this.duration = duration;
+        this.durationSec = durationSec;
     }
 }

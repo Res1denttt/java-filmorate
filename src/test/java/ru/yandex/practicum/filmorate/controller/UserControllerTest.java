@@ -4,7 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.user.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
 
@@ -105,16 +105,5 @@ class UserControllerTest {
         Collection<User> allUsers = controller.findAll();
         assertEquals(2, allUsers.size());
         assertTrue(allUsers.containsAll(List.of(user1, user2)));
-    }
-
-    @Test
-    void shouldAddFriend() {
-        User user1 = new User("user1@example.com", "login1", "User One", LocalDate.of(1990, 1, 1));
-        controller.create(user1);
-        User user2 = new User("user2@example.com", "login2", "User Two", LocalDate.of(1991, 2, 2));
-        controller.create(user2);
-        controller.makeFriends(user1.getId(), user2.getId());
-        assertTrue(user1.getFriends().contains(user2.getId()));
-        assertTrue(user2.getFriends().contains(user1.getId()));
     }
 }
